@@ -80,22 +80,20 @@ public class TestStuff {
 
         private static List<Character> alphabetOfCipherCharacters = Arrays.asList('A', 'B', 'C', 'N', 'O', 'P');
 
-        public static String encode(String string){
-            StringBuilder inProgress = new StringBuilder();
-            for(int i = 0; i < string.length(); i++) {
-                int plaintextCharacter = string.charAt(i);
-                Character toBeAppended;
-                toBeAppended = encodeCharacter((char) plaintextCharacter);
-                inProgress.append( toBeAppended);
+        public static String encode(String plaintext){
+            String ciphertext = "";
+            for(int i = 0; i < plaintext.length(); i++) {
+                char plaintextCharacter = plaintext.charAt(i);
+                ciphertext += (encodeCharacter(plaintextCharacter));
             }
-            return inProgress.toString().toUpperCase();
+            return ciphertext.toUpperCase();
         }
 
         private static Character encodeCharacter(char plaintextCharacter) {
             if(isCharacterInTheAlphabetOfCharsToBeChanged(plaintextCharacter)){
                 return encrypt(plaintextCharacter);
             } else {
-                return new Character(plaintextCharacter);
+                return plaintextCharacter;
             }
         }
 
