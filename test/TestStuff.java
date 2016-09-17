@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -16,7 +17,7 @@ public class TestStuff {
 
         for( int i = 0; i < 100; i++){
             String aRandomString = createARandomString(charactersOfAlphabet);
-            String encode = encode(CesarCipher.encode(aRandomString));
+            String encode = CesarCipher.encode(CesarCipher.encode(aRandomString));
 
             assertThat(encode, equalTo( aRandomString ));
         }
@@ -27,7 +28,7 @@ public class TestStuff {
 
         for( int i = 0; i < 100; i++){
             String aRandomString = createARandomString(characterOfAlphabetAndSpecialCharacters);
-            String encode = encode(CesarCipher.encode(aRandomString));
+            String encode = CesarCipher.encode(CesarCipher.encode(aRandomString));
 
             assertThat(encode, equalTo( aRandomString ));
         }
@@ -38,7 +39,22 @@ public class TestStuff {
 
         for( int i = 0; i < 100; i++){
             String aRandomString = createARandomString(charactersOfAlphabet);
-            String encode = encode(aRandomString);
+            String encode = CesarCipher.encode(aRandomString);
+
+            for(int j = 0; j < encode.length(); j++) {
+                assertThat(encode.charAt(j) < (int) 'a', equalTo(true));
+            }
+        }
+    }
+
+    @org.junit.Test
+    public void shouldBeAbleToRandomizeTheAlphabetThatIsUsed() throws Exception {
+        List<Character> characters = Arrays.asList(charactersOfAlphabet);
+        Collections.shuffle( characters );
+
+        for( int i = 0; i < 100; i++){
+            String aRandomString = createARandomString(characterOfAlphabetAndSpecialCharacters);
+            String encode = CesarCipher.encode(aRandomString, characters);
 
             for(int j = 0; j < encode.length(); j++) {
                 assertThat(encode.charAt(j) < (int) 'a', equalTo(true));
@@ -48,7 +64,7 @@ public class TestStuff {
 
     @Test
     public void testUppercaseAMapsToUppercaseN() throws Exception {
-        String result = encode("A");
+        String result = CesarCipher.encode("A");
 
         assertThat(result, equalTo("N"));
     }
@@ -57,15 +73,11 @@ public class TestStuff {
     @Test
     public void testWithSpecialChars() throws Exception {
 
-        String result = encode("A!");
+        String result = CesarCipher.encode("A!");
 
         assertThat(result, equalTo("N!"));
 
 
-    }
-
-    private String encode(String plaintext) {
-        return CesarCipher.encode(plaintext);
     }
 
     private String createARandomString(Character[] characters) {
@@ -84,17 +96,25 @@ public class TestStuff {
         private static List<Character> alphabetOfCipherCharacters = Arrays.asList('A', 'B', 'C', 'N', 'O', 'P');
 
         public static String encode(String plaintext){
+            return encodeWithAlphabet(plaintext, alphabetOfCipherCharacters);
+        }
+
+        public static String encode(String plaintext, List<Character> alphabetListToEncrypt) {
+            return encodeWithAlphabet(plaintext, alphabetListToEncrypt);
+        }
+
+        private static String encodeWithAlphabet(String plaintext, List<Character> alphabetOfCipherCharacters) {
             String ciphertext = "";
             for(int i = 0; i < plaintext.length(); i++) {
                 char plaintextCharacter = plaintext.charAt(i);
-                ciphertext += (encodeCharacter(plaintextCharacter));
+                ciphertext += (encodeCharacter(plaintextCharacter, alphabetOfCipherCharacters));
             }
             return ciphertext.toUpperCase();
         }
 
-        private static Character encodeCharacter(char plaintextCharacter) {
+        private static Character encodeCharacter(char plaintextCharacter, List<Character> characters) {
             if(isCharacterInTheAlphabetOfCharsToBeChanged(plaintextCharacter)){
-                return encrypt(plaintextCharacter);
+                return encrypt(plaintextCharacter, characters);
             } else {
                 return plaintextCharacter;
             }
@@ -104,12 +124,11 @@ public class TestStuff {
             return alphabetOfCipherCharacters.contains(plaintextCharacter);
         }
 
-        private static Character encrypt(char plaintextCharacter) {
-            int sizeOfTheAlphabet = alphabetOfCipherCharacters.size();
+        private static Character encrypt(char plaintextCharacter, List<Character> characters) {
+            int sizeOfTheAlphabet = characters.size();
             int encryptionOffset = sizeOfTheAlphabet / 2;
-            int offsetOfPlaintextCharacter = alphabetOfCipherCharacters.indexOf(plaintextCharacter);
-            return alphabetOfCipherCharacters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
+            int offsetOfPlaintextCharacter = characters.indexOf(plaintextCharacter);
+            return characters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
         }
-
     }
 }
