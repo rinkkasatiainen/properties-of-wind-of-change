@@ -1,16 +1,21 @@
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestStuff {
-    Character[] charactersOfAlphabet = {'A', 'B', 'C', 'N', 'O', 'P'};
-    Character[] characterOfAlphabetAndSpecialCharacters = {'A', 'B', 'C', 'N', 'O', 'P', ' ', '?' };
+    Character[] charactersOfAlphabet = {'A', 'B', 'C', 'D', 'E', 'F', 'N', 'O', 'P', 'Q', 'R', 'S'};
+    Character[] characterOfAlphabetAndSpecialCharacters = {'A', 'B', 'C', 'D', 'E', 'F', 'N', 'O', 'P', 'Q', 'R', 'S', ' ', '?' };
 
     @org.junit.Test
     public void shouldBeTheSameAfterEncodingTwice() throws Exception {
@@ -48,17 +53,40 @@ public class TestStuff {
     }
 
     @org.junit.Test
+    public void aStringWithRandomAlphabetShouldNotBeEncodedAsSimilarlyAsStringWithDefaultAlphabet() throws Exception {
+        int indexOfElementToBeRemovedFromAlphabet = charactersOfAlphabet.length - 1;
+        List<Character> randomAlphabet = Lists.newArrayList(charactersOfAlphabet) ;
+        List<List<Character>> partition = Lists.partition(randomAlphabet, indexOfElementToBeRemovedFromAlphabet);
+        Character character = partition.get(0).remove(partition.get(0).size() - 1);
+        List<Character> collect = partition.stream().flatMap(List::stream).collect(Collectors.toList());
+        Collections.shuffle( collect );
+        collect.add( character );
+
+        int failedCount = 0;
+        int round = 100000;
+        for(int i = 0; i < round; i++){
+            String aRandomString = createARandomString(charactersOfAlphabet);
+            String encodeWithDefaultAlphabet = CesarCipher.encode(aRandomString);
+            String encodeWithRandomAlphabet = CesarCipher.encode(aRandomString, collect);
+
+            failedCount = encodeWithDefaultAlphabet.equals( encodeWithRandomAlphabet ) ?failedCount+1  : failedCount;
+
+        }
+            assertThat("Rounds: " + round + "total of " + failedCount + " error occurred", failedCount < round / 100 , equalTo(true) );
+    }
+
+    @org.junit.Test
     public void shouldBeAbleToRandomizeTheAlphabetThatIsUsed() throws Exception {
         List<Character> characters = Arrays.asList(charactersOfAlphabet);
         Collections.shuffle( characters );
 
         for( int i = 0; i < 100; i++){
-            String aRandomString = createARandomString(characterOfAlphabetAndSpecialCharacters);
-            String encode = CesarCipher.encode(aRandomString, characters);
+            String plaintext = createARandomString(characterOfAlphabetAndSpecialCharacters);
+            String encode = CesarCipher.encode(plaintext, characters);
+            String ciphertext = CesarCipher.encode(encode, characters);
 
-            for(int j = 0; j < encode.length(); j++) {
-                assertThat(encode.charAt(j) < (int) 'a', equalTo(true));
-            }
+            assertThat("alphabet: " + Joiner.on(',').join( characters ) + "\n" + "plaintext:  " + plaintext + " - \n" + "ciphertext: " + encode, ciphertext, equalTo( plaintext ));
+
         }
     }
 
@@ -93,7 +121,7 @@ public class TestStuff {
 
     private static class CesarCipher {
 
-        private static List<Character> alphabetOfCipherCharacters = Arrays.asList('A', 'B', 'C', 'N', 'O', 'P');
+        private static List<Character> alphabetOfCipherCharacters = Arrays.asList('A', 'B', 'C', 'D', 'E', 'F', 'N', 'O', 'P', 'Q', 'R', 'S');
 
         public static String encode(String plaintext){
             return encodeWithAlphabet(plaintext, alphabetOfCipherCharacters);
@@ -112,23 +140,23 @@ public class TestStuff {
             return ciphertext.toUpperCase();
         }
 
-        private static Character encodeCharacter(char plaintextCharacter, List<Character> characters) {
-            if(isCharacterInTheAlphabetOfCharsToBeChanged(plaintextCharacter)){
-                return encrypt(plaintextCharacter, characters);
+        private static Character encodeCharacter(char plaintextCharacter, List<Character> alphabetOfCharactersToBeCiphered) {
+            if(isCharacterInTheAlphabetOfCharsToBeChanged(plaintextCharacter, alphabetOfCharactersToBeCiphered)){
+                return encrypt(plaintextCharacter, alphabetOfCharactersToBeCiphered);
             } else {
                 return plaintextCharacter;
             }
         }
 
-        private static boolean isCharacterInTheAlphabetOfCharsToBeChanged(char plaintextCharacter) {
-            return alphabetOfCipherCharacters.contains(plaintextCharacter);
+        private static boolean isCharacterInTheAlphabetOfCharsToBeChanged(char plaintextCharacter, List<Character> characters) {
+            return characters.contains(plaintextCharacter);
         }
 
         private static Character encrypt(char plaintextCharacter, List<Character> characters) {
             int sizeOfTheAlphabet = characters.size();
             int encryptionOffset = sizeOfTheAlphabet / 2;
             int offsetOfPlaintextCharacter = characters.indexOf(plaintextCharacter);
-            return characters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
+            return characters.get((offsetOfPlaintextCharacter + encryptionOffset) % sizeOfTheAlphabet);
         }
     }
 }
