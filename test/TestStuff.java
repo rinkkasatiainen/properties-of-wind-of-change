@@ -78,7 +78,7 @@ public class TestStuff {
 
     private static class CesarCipher {
 
-        private static List<Character> characters = Arrays.asList('A', 'B', 'C', 'N', 'O', 'P');
+        private static List<Character> alphabetOfCipherCharacters = Arrays.asList('A', 'B', 'C', 'N', 'O', 'P');
 
         public static String encode(String string){
             StringBuilder inProgress = new StringBuilder();
@@ -100,14 +100,14 @@ public class TestStuff {
         }
 
         private static boolean isCharacterInTheAlphabetOfCharsToBeChanged(char plaintextCharacter) {
-            return characters.contains(plaintextCharacter);
+            return alphabetOfCipherCharacters.contains(plaintextCharacter);
         }
 
         private static Character encrypt(char plaintextCharacter) {
-            int sizeOfTheAlphabet = characters.size();
+            int sizeOfTheAlphabet = alphabetOfCipherCharacters.size();
             int encryptionOffset = sizeOfTheAlphabet / 2;
-            int offsetOfPlaintextCharacter = characters.indexOf(plaintextCharacter);
-            return characters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
+            int offsetOfPlaintextCharacter = alphabetOfCipherCharacters.indexOf(plaintextCharacter);
+            return alphabetOfCipherCharacters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
         }
 
     }
