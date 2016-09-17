@@ -6,11 +6,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestStuff {
@@ -54,25 +52,19 @@ public class TestStuff {
 
     @org.junit.Test
     public void aStringWithRandomAlphabetShouldNotBeEncodedAsSimilarlyAsStringWithDefaultAlphabet() throws Exception {
-        int indexOfElementToBeRemovedFromAlphabet = charactersOfAlphabet.length - 1;
-        List<Character> randomAlphabet = Lists.newArrayList(charactersOfAlphabet) ;
-        List<List<Character>> partition = Lists.partition(randomAlphabet, indexOfElementToBeRemovedFromAlphabet);
-        Character character = partition.get(0).remove(partition.get(0).size() - 1);
-        List<Character> collect = partition.stream().flatMap(List::stream).collect(Collectors.toList());
-        Collections.shuffle( collect );
-        collect.add( character );
+        List<Character> aRandomAlphabetToEncodeWith = randomizeTheEncryptionAlphabet();
 
         int failedCount = 0;
-        int round = 100000;
-        for(int i = 0; i < round; i++){
+        int totalRounds = 100000;
+        for(int i = 0; i < totalRounds; i++){
             String aRandomString = createARandomString(charactersOfAlphabet);
             String encodeWithDefaultAlphabet = CesarCipher.encode(aRandomString);
-            String encodeWithRandomAlphabet = CesarCipher.encode(aRandomString, collect);
+            String encodeWithRandomAlphabet = CesarCipher.encode(aRandomString, aRandomAlphabetToEncodeWith);
 
             failedCount = encodeWithDefaultAlphabet.equals( encodeWithRandomAlphabet ) ?failedCount+1  : failedCount;
 
         }
-            assertThat("Rounds: " + round + "total of " + failedCount + " error occurred", failedCount < round / 100 , equalTo(true) );
+        assertThat("Rounds: " + totalRounds + ", total of " + failedCount + " error occurred", failedCount < totalRounds / 100 , equalTo(true) );
     }
 
     @org.junit.Test
@@ -88,6 +80,17 @@ public class TestStuff {
             assertThat("alphabet: " + Joiner.on(',').join( characters ) + "\n" + "plaintext:  " + plaintext + " - \n" + "ciphertext: " + encode, ciphertext, equalTo( plaintext ));
 
         }
+    }
+
+    private List<Character> randomizeTheEncryptionAlphabet() {
+        int indexOfElementToBeRemovedFromAlphabet = charactersOfAlphabet.length - 1;
+        List<Character> randomAlphabet = Lists.newArrayList(charactersOfAlphabet) ;
+        List<List<Character>> partition = Lists.partition(randomAlphabet, indexOfElementToBeRemovedFromAlphabet);
+        Character character = partition.get(0).remove(partition.get(0).size() - 1);
+        List<Character> collect = partition.stream().flatMap(List::stream).collect(Collectors.toList());
+        Collections.shuffle( collect );
+        collect.add( character );
+        return collect;
     }
 
     @Test
