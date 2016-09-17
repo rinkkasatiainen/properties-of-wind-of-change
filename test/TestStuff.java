@@ -93,7 +93,7 @@ public class TestStuff {
 
         private static Character encodeCharacter(char plaintextCharacter) {
             if(isCharacterInTheAlphabetOfCharsToBeChanged(plaintextCharacter)){
-                return new Character(encrypt(plaintextCharacter));
+                return encrypt(plaintextCharacter);
             } else {
                 return new Character(plaintextCharacter);
             }
@@ -103,11 +103,11 @@ public class TestStuff {
             return characters.contains(plaintextCharacter);
         }
 
-        private static char encrypt(char plaintextCharacter) {
+        private static Character encrypt(char plaintextCharacter) {
             int sizeOfTheAlphabet = characters.size();
             int encryptionOffset = sizeOfTheAlphabet / 2;
             int offsetOfPlaintextCharacter = characters.indexOf(plaintextCharacter);
-            return (char) characters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
+            return characters.get((offsetOfPlaintextCharacter + encryptionOffset) % 6);
         }
 
     }
