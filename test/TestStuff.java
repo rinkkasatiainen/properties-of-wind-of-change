@@ -8,14 +8,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestStuff {
+    Character[] charactersOfAlphabet = {'A', 'B', 'C', 'N', 'O', 'P'};
+    Character[] characterOfAlphabetAndSpecialCharacters = {'A', 'B', 'C', 'N', 'O', 'P', ' ', '?' };
 
     @org.junit.Test
     public void shouldBeTheSameAfterEncodingTwice() throws Exception {
-        Character[] characters = {'A', 'B', 'C', 'N', 'O', 'P'};
 
         for( int i = 0; i < 100; i++){
-            String aRandomString = createARandomString(characters);
-            String encode = CesarCipher.encode(CesarCipher.encode(aRandomString));
+            String aRandomString = createARandomString(charactersOfAlphabet);
+            String encode = encode(CesarCipher.encode(aRandomString));
 
             assertThat(encode, equalTo( aRandomString ));
         }
@@ -23,11 +24,10 @@ public class TestStuff {
 
     @org.junit.Test
     public void shouldBeTheSameAfterEncodingTwiceWithSpecialChars() throws Exception {
-        Character[] characters = {'A', 'B', 'C', 'N', 'O', 'P', ' ', '?' };
 
         for( int i = 0; i < 100; i++){
-            String aRandomString = createARandomString(characters);
-            String encode = CesarCipher.encode(CesarCipher.encode(aRandomString));
+            String aRandomString = createARandomString(characterOfAlphabetAndSpecialCharacters);
+            String encode = encode(CesarCipher.encode(aRandomString));
 
             assertThat(encode, equalTo( aRandomString ));
         }
@@ -35,11 +35,10 @@ public class TestStuff {
 
     @org.junit.Test
     public void shouldNotHaveLowercaseCharactersAfterEncoding() throws Exception {
-        Character[] characters = {'a', 'b', 'c', 'n', 'o', 'p'};
 
         for( int i = 0; i < 100; i++){
-            String aRandomString = createARandomString(characters);
-            String encode = CesarCipher.encode(aRandomString);
+            String aRandomString = createARandomString(charactersOfAlphabet);
+            String encode = encode(aRandomString);
 
             for(int j = 0; j < encode.length(); j++) {
                 assertThat(encode.charAt(j) < (int) 'a', equalTo(true));
@@ -47,22 +46,26 @@ public class TestStuff {
         }
     }
 
-
     @Test
     public void testUppercaseAMapsToUppercaseN() throws Exception {
-        String result = CesarCipher.encode("A");
+        String result = encode("A");
 
         assertThat(result, equalTo("N"));
     }
 
+
     @Test
     public void testWithSpecialChars() throws Exception {
 
-        String result = CesarCipher.encode("A!");
+        String result = encode("A!");
 
         assertThat(result, equalTo("N!"));
 
 
+    }
+
+    private String encode(String plaintext) {
+        return CesarCipher.encode(plaintext);
     }
 
     private String createARandomString(Character[] characters) {
